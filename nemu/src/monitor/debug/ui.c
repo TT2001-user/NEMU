@@ -63,6 +63,22 @@ static int cmd_info(char *args){
       return 0;
 }
 
+static int cmd_x(char *args){
+        int i;
+        swaddr_t address;
+        char* cmd=strtok(args," ");
+        int n=atoi(cmd);
+        cmd=strtok(NULL," ");
+        sscanf(cmd,"%x",&address);
+        for(i=1;i<=n;i++)
+        {
+            if(i%5==0)    printf("\n");
+            printf("0x%08x\n",swaddr_read(address,4));
+            address+=4;
+        }              
+        return 0;  
+}
+
 static struct {
 	char *name;
 	char *description;
@@ -73,7 +89,7 @@ static struct {
 	{ "q", "Exit NEMU", cmd_q },
         { "si", "Step into implementation of N instructions after the suspension of execution.If N is not given, the defoult is 1.",cmd_si},
         { "info", "r for print register state",cmd_info},
-
+        { "x", "Calculate the value of the expression and regard the result as the starting memory address.",cmd_x},
 	/* TODO: Add more commands */
 
 };
