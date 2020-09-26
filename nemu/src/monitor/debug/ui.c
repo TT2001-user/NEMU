@@ -38,6 +38,14 @@ static int cmd_q(char *args) {
 
 static int cmd_help(char *args);
 
+static int cmd_si(char *args){
+        int num=0;
+        if(args==NULL) num=1;
+        else sscanf(args,"%d",&num);
+        cpu_exec(num);
+        return 0;
+}
+
 static struct {
 	char *name;
 	char *description;
@@ -46,6 +54,7 @@ static struct {
 	{ "help", "Display informations about all supported commands", cmd_help },
 	{ "c", "Continue the execution of the program", cmd_c },
 	{ "q", "Exit NEMU", cmd_q },
+        { "si", "Step into implementation of N instructions after the suspension of execution.If N is not given, the defoult is 1.",cmd_si},
 
 	/* TODO: Add more commands */
 
