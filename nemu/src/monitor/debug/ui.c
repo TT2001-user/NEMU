@@ -46,6 +46,23 @@ static int cmd_si(char *args){
         return 0;
 }
 
+static int cmd_info(char *args){
+       if(args[0]=='r'){    
+           printf("eax %x %d\n",cpu.eax,cpu.eax);
+           printf("ecx %x %d\n",cpu.ecx,cpu.ecx);
+           printf("edx %x %d\n",cpu.edx,cpu.edx);
+           printf("ebx %x %d\n",cpu.ebx,cpu.ebx);
+           printf("esp %x %d\n",cpu.esp,cpu.esp);
+           printf("ebp %x %d\n",cpu.ebp,cpu.ebp);
+           printf("esi %x %d\n",cpu.esi,cpu.esi);
+           printf("edi %x %d\n",cpu.edi,cpu.edi);
+         }
+    // else if(strcmp(arg,"w")==0){
+
+    //   }
+      return 0;
+}
+
 static struct {
 	char *name;
 	char *description;
@@ -55,6 +72,7 @@ static struct {
 	{ "c", "Continue the execution of the program", cmd_c },
 	{ "q", "Exit NEMU", cmd_q },
         { "si", "Step into implementation of N instructions after the suspension of execution.If N is not given, the defoult is 1.",cmd_si},
+        { "info", "r for print register state",cmd_info},
 
 	/* TODO: Add more commands */
 
