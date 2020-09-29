@@ -102,6 +102,18 @@ static bool make_token(char *e) {
                                              nr_token++;
                                              break;
                                         case EQ:
+                                        case NUMBER:
+                                        case HNUMBER:
+                                        case NEQ:
+                                        case NOT:
+                                        case AND:
+                                        case OR:
+                                        case 43:
+                                        case 45:
+                                        case 42:
+                                        case 47:
+                                        case 40:
+                                        case 41:
                                              tokens[nr_token].type=rules[i].token_type;
                                              tokens[nr_token].priority=rules[i].priority;
                                              strncpy(tokens[nr_token].str,substr_start,substr_len);
