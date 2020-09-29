@@ -7,8 +7,7 @@
 #include <regex.h>
 
 enum {
-	NOTYPE = 256, EQ, number,
-
+	NOTYPE = 256, EQ, NUMBER, HNUMBER, REGISTER, NEQ, NOT, AND, OR,
 	/* TODO: Add more token types */
 
 };
@@ -16,22 +15,28 @@ enum {
 static struct rule {
 	char *regex;
 	int token_type;
-        int prior;
+        int priority;
 } rules[] = {
 
 	/* TODO: Add more rules.
 	 * Pay attention to the precedence level of different rules.
 	 */
 
-	{" +",	NOTYPE,-1},				// spaces
-	{"\\+", '+',5},					// plus
-	{"==", EQ,4},					// equal
-        {"-", '-',5},                                   //sub
-        {"\\*", '*',6},                                 //mutiple
-        {"/", '/',6},                                   //division
-        {"\\(", '(',8},                                 //left
-        {"\\)", ')',8},                                 //right
-        {"\\b[0-9]+\\b", number,-1},                    //number
+	{" +",	NOTYPE,0},				// spaces
+	{"\\+", '+',4},					// plus
+	{"==", EQ,3},					// equal
+        {"!=",NEQ,3},                                   //not equal
+        {"!",NOT,6},                                    //not
+        {"&&",AND,2},                                   //and
+        {"\\|\\|",OR,1},                                //or
+        {"-", '-',4},                                   //sub
+        {"\\*", '*',5},                                 //mutiple
+        {"/", '/',5},                                   //division
+        {"\\(", '(',7},                                 //left
+        {"\\)", ')',7},                                 //right
+        {"\\b[0-9]+\\b", NUMBER,0},                     //number
+        {"\\b0[xX][0-9a-fA-F]+\\b",HNUMBER,0},         //16number
+        {"\\$[a-zA-Z]+",REGISTER,0},                    //Register
         
 };
 
@@ -59,6 +64,7 @@ void init_regex() {
 typedef struct token {
 	int type;
 	char str[32];
+        int priority;
 } Token;
 
 Token tokens[32];
@@ -72,21 +78,36 @@ static bool make_token(char *e) {
 	nr_token = 0;
 
 	while(e[position] != '\0') {
-		/* Try all rules one by one. */
-		for(i = 0; i < NR_REGEX; i ++) {
-			if(regexec(&re[i], e + position, 1, &pmatch, 0) == 0 && pmatch.rm_so == 0) {
+	/* Try all rules one by one. */
+        	for(i = 0; i < NR_REGEX; i ++) {
+	        	if(regexec(&re[i], e + position, 1, &pmatch, 0) == 0 && pmatch.rm_so == 0) {
 				char *substr_start = e + position;
+                                char *tmp=e+position+1;
 				int substr_len = pmatch.rm_eo;
 
 				Log("match rules[%d] = \"%s\" at position %d with len %d: %.*s", i, rules[i].regex, position, substr_len, substr_len, substr_start);
 				position += substr_len;
 
-				/* TODO: Now a new token is recognized with rules[i]. Add codes
-				 * to record the token in the array `tokens'. For certain types
-				 * of tokens, some extra actions should be performed.
-				 */
-
-				switch(rules[i].token_type) {
+	/* TODO: Now a new token is recognized with rules[i]. Add codes
+	 * to record the token in the array `tokens'. For certain types
+         * of tokens, some extra actions should be performed.
+	 */
+                 		switch(rules[i].token_type) {
+                                        case NOTYPE:break;
+                                        case REGISTER:
+                                             tokens[nr_token].type=rules[i].token_type;
+                                             tokens[nr_token].priority=rules[i].priority;
+                                             strncpy (tokens[nr_token].str,tmp,substr_len-1);
+                                             tokens[nr_token].str[substr_len-1]='\0';
+                                             nr_token++;
+                                             break;
+                                        case EQ:
+                                             tokens[nr_token].type=rules[i].token_type;
+                                             tokens[nr_token].priority=rules[i].priority;
+                                             strncpy(tokens[nr_token].str,substr_start,substr_len);
+                                             tokens[nr_token].str[substr_len]='\0';
+                                             nr_token++;
+                                             break;
 					default: panic("please implement me");
 				}
 
