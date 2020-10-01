@@ -7,7 +7,7 @@
 #include <regex.h>
 
 enum {
-	NOTYPE = 256, EQ, NUMBER, HNUMBER, REGISTER, NEQ, NOT, AND, OR,
+	NOTYPE = 256, EQ, NUMBER, HNUMBER, REGISTER, NEQ, NOT, AND, OR,MINUS,POINTOR,
 	/* TODO: Add more token types */
 
 };
@@ -136,6 +136,25 @@ static bool make_token(char *e) {
 	return true; 
 }
 
+bool check_parentheses(int l,int r)
+{
+        int i;
+        if(tokens[l].type=='('&&tokens[r].type==')')
+        {
+               int lc=0,rc=0;
+               for(i=l+1;i<r;i++)
+               {
+                       if(tokens[i].type=='(') lc++;
+                       if(tokens[i].type==')') rc++;
+                       if(rc>lc) return false;
+               }
+               if(lc==rc)  return true;
+        }
+        return false;
+}
+
+
+
 uint32_t expr(char *e, bool *success) {
 	if(!make_token(e)) {
 		*success = false;
@@ -146,4 +165,25 @@ uint32_t expr(char *e, bool *success) {
 	panic("please implement me");
 	return 0;
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
