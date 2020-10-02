@@ -176,6 +176,79 @@ int dominant_operator(int l,int r)
         return oper;
 }
 
+uint32_t eval(int l,int r){
+        if(l>r) {Assert(l>r,"something happened!\n");   return 0;}
+        if(l==r) {
+         uint32_t num=0;
+         if(tokens[l].type==NUMBER)
+                sscanf(tokens[l].str,"%d",&num);
+         if(tokens[l].type==HNUMBER)
+                sscanf(tokens[l].str,"%x",&num);
+         if(tokens[l].type==REGISTER)
+         {
+                if(strlen(tokens[l].str)==3) {
+                         int i;
+                         for(i=R_EAX;i<=R_EDI;i++)
+                                     if(strcmp(tokens[l].str,regsl[i])==0)   break;
+                         if(i>R_EDI)
+                                     if(strcmp(tokens[l].str,"eip")==0)
+                                              num=cpu.eip;
+                                     else  Assert(1,"no this register!\n");
+                         else   num=reg_l(i);
+                }
+                else if(strlen(tokens[l].str)==2)  {
+                         if(tokens[l].str[1]=='x'||tokens[l].str[1]=='p'||tokens[l].str[1]=='i'){
+                                     int i;
+                                     for(i=R_AX;i<=R_DI;i++)
+                                              if(strcmp(tokens[l].str,regsw[i])==0)   break;
+                                     num=reg_w(i);
+                         }
+                         else if(tokens[l].str[1]=='l'||tokens[l].str[1]=='h'){
+                                     int i;
+                                     for(i=R_AL;i<=R_BH;i++)
+                                              if(strcmp(tokens[l].str,regsb[i])==0)   break;
+                                     num=reg_b(i);
+                         }
+
+                else assert(1);
+                }
+          }
+          return num;
+         }
+         else if(check_parentheses (l,r)==true)    return eval(l+1,r-1);
+         else{
+                int op=dominant_operator(l,r);
+                if(l==op||tokens[op].type==POINTOR||tokens[op].type==MINUS||tokens[op].type=='!')
+                {
+                        uint32_t val=eval(l+1,r);
+                        switch(tokens[l].type)
+                        {
+                              case POINTOR: return swaddr_read(val,4);
+                              case MINUS: return -val;
+                              case '!': return !val;
+                              default: Assert(1,"default\n");
+                        }
+                }
+          
+                uint32_t val1=eval(l,op-1);
+                uint32_t val2=eval(op+1,r);
+                switch(tokens[op].type)
+                {
+                        case '+':return val1+val2;
+                        case '-':return val1-val2;
+                        case '*':return val1*val2;
+                        case '/':return val1/val2;
+                        case EQ:return val1==val2;
+                        case NEQ:return val1!=val2;
+                        case AND:return val1&&val2;
+                        case OR:return val1||val2;
+                        default:     break;
+                }
+             }
+                assert(1);
+                return -123456;
+}        
+
 
 uint32_t expr(char *e, bool *success) {
 	if(!make_token(e)) {
@@ -185,27 +258,17 @@ uint32_t expr(char *e, bool *success) {
 
 	/* TODO: Insert codes to evaluate the expression. */
 	panic("please implement me");
-	return 0;
+        int i;
+        for(i=0;i<nr_token;i++){
+                if(tokens[i].type=='*'&&(i==0||(tokens[i-1].type!=NUMBER&&tokens[i-1].type!=HNUMBER&&tokens[i-1].type!=REGISTER&&tokens[i-1].type!=')'))){
+                         tokens[i].type=POINTOR;
+                         tokens[i].priority=6;
+                }
+                if(tokens[i].type=='-'&&(i==0||(tokens[i-1].type!=NUMBER&&tokens[i-1].type!=HNUMBER&&tokens[i-1].type!=REGISTER&&tokens[i-1].type!=')'))){
+                         tokens[i].type=MINUS;
+                         tokens[i].priority=6;
+                }
+        }
+        *success=true;
+        return eval(0,nr_token-1);
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
