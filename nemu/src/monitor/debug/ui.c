@@ -63,18 +63,32 @@ static int cmd_info(char *args){
       return 0;
 }
 
+static int cmd_p(char* args){
+        uint32_t num;
+        bool suc;
+        num=expr(args,&suc);
+        if(suc)
+             printf("0x%x:\t%d\n",num,num);
+        else assert(0);
+        return 0;
+}
+
 static int cmd_x(char *args){
         int i;
         swaddr_t address;
         char* cmd=strtok(args," ");
         int n=atoi(cmd);
         cmd=strtok(NULL," ");
-        sscanf(cmd,"%x",&address);
+        bool suc;
+        address=expr(cmd,&suc);
+        if(!suc)    assert(1);
+        printf("0x%08x:",address);
         for(i=1;i<=n;i++)
         {
             printf("0x%x 0x%08x\n",address,swaddr_read(address,4));
             address+=4;
         }              
+        printf("\n");
         return 0;  
 }
 
@@ -88,6 +102,7 @@ static struct {
 	{ "q", "Exit NEMU", cmd_q },
         { "si", "Step into implementation of N instructions after the suspension of execution.If N is not given, the defoult is 1.",cmd_si},
         { "info", "r for print register state",cmd_info},
+        { "p", "Expression evaluation",cmd_p},
         { "x", "Calculate the value of the expression and regard the result as the starting memory address.",cmd_x},
 	/* TODO: Add more commands */
 
