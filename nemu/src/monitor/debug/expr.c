@@ -22,7 +22,7 @@ static struct rule {
 	 * Pay attention to the precedence level of different rules.
 	 */
         {"\\b[0-9]+\\b",NUMBER,0},                      //number
-        {"\\b0[xX]{0-9a-fA-F]+\\b",HNUMBER,0},          //16number
+        {"\\b0[xX][0-9a-fA-F]+\\b",HNUMBER,0},          //16number
         {"\\$[a-zA-Z]+",REGISTER,0},                    //register
         {"\\b[a-zA-Z_0-9]+",MARK,0},                    //mark
 	{" +",NOTYPE,0},				// spaces
