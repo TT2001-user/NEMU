@@ -7,7 +7,7 @@
 #include <regex.h>
 
 enum {
-	NOTYPE = 256, EQ, NUMBER, HNUMBER, REGISTER, NEQ, NOT, AND, OR,MINUS,POINTOR,
+	NOTYPE = 256,EQ,NEQ,AND,OR,MINUS,POINTOR,NUMBER,HNUMBER,REGISTER,MARK
 	/* TODO: Add more token types */
 
 };
@@ -21,23 +21,22 @@ static struct rule {
 	/* TODO: Add more rules.
 	 * Pay attention to the precedence level of different rules.
 	 */
-
-	{" +",	NOTYPE,0},				// spaces
-	{"\\+", '+',4},					// plus
-	{"==", EQ,3},					// equal
+        {"\\b[0-9]+\\b",NUMBER,0},                      //number
+        {"\\b0[xX]{0-9a-fA-F]+\\b",HNUMBER,0},          //16number
+        {"\\$[a-zA-Z]+",REGISTER,0},                    //register
+        {"\\b[a-zA-Z_0-9]+",MARK,0},                    //mark
+	{" +",NOTYPE,0},				// spaces
+	{"\\+",'+',4},					// plus
+	{"==",EQ,3},					// equal
         {"!=",NEQ,3},                                   //not equal
-        {"!",NOT,6},                                    //not
+        {"!",'!',6},                                    //not
         {"&&",AND,2},                                   //and
         {"\\|\\|",OR,1},                                //or
-        {"-", '-',4},                                   //sub
-        {"\\*", '*',5},                                 //mutiple
-        {"/", '/',5},                                   //division
-        {"\\(", '(',7},                                 //left
-        {"\\)", ')',7},                                 //right
-        {"\\b[0-9]+\\b", NUMBER,0},                     //number
-        {"\\b0[xX][0-9a-fA-F]+\\b",HNUMBER,0},         //16number
-        {"\\$[a-zA-Z]+",REGISTER,0},                    //Register
-        
+        {"-",'-',4},                                   //sub
+        {"\\*",'*',5},                                 //mutiple
+        {"/",'/',5},                                   //division
+        {"\\(",'(',7},                                 //left
+        {"\\)",')',7},                                 //righ
 };
 
 #define NR_REGEX (sizeof(rules) / sizeof(rules[0]) )
@@ -86,7 +85,6 @@ static bool make_token(char *e) {
 				int substr_len = pmatch.rm_eo;
 
 				Log("match rules[%d] = \"%s\" at position %d with len %d: %.*s", i, rules[i].regex, position, substr_len, substr_len, substr_start);
-				position += substr_len;
 
 	/* TODO: Now a new token is recognized with rules[i]. Add codes
 	 * to record the token in the array `tokens'. For certain types
@@ -101,28 +99,14 @@ static bool make_token(char *e) {
                                              tokens[nr_token].str[substr_len-1]='\0';
                                              nr_token++;
                                              break;
-                                        case EQ:
-                                        case NUMBER:
-                                        case HNUMBER:
-                                        case NEQ:
-                                        case NOT:
-                                        case AND:
-                                        case OR:
-                                        case 43:
-                                        case 45:
-                                        case 42:
-                                        case 47:
-                                        case 40:
-                                        case 41:
+                                        default:
                                              tokens[nr_token].type=rules[i].token_type;
                                              tokens[nr_token].priority=rules[i].priority;
                                              strncpy(tokens[nr_token].str,substr_start,substr_len);
                                              tokens[nr_token].str[substr_len]='\0';
                                              nr_token++;
-                                             break;
-					default: panic("please implement me");
 				}
-
+                                position+=substr_len;
 				break;
 			}
 		}
@@ -160,7 +144,7 @@ int dominant_operator(int l,int r)
         int oper=l;
         for(i=l;i<=r;i++)
         {
-                if(tokens[i].type==NUMBER||tokens[i].type==HNUMBER||tokens[i].type==REGISTER)
+                if(tokens[i].type==NUMBER||tokens[i].type==HNUMBER||tokens[i].type==REGISTER||tokens[i].type==MARK)
                         continue;
                 int cnt=0;
                 bool key=true;
@@ -257,7 +241,6 @@ uint32_t expr(char *e, bool *success) {
 	}
 
 	/* TODO: Insert codes to evaluate the expression. */
-	panic("please implement me");
         int i;
         for(i=0;i<nr_token;i++){
                 if(tokens[i].type=='*'&&(i==0||(tokens[i-1].type!=NUMBER&&tokens[i-1].type!=HNUMBER&&tokens[i-1].type!=REGISTER&&tokens[i-1].type!=')'))){

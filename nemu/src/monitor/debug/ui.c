@@ -74,19 +74,20 @@ static int cmd_p(char* args){
 }
 
 static int cmd_x(char *args){
+        int n;
+        swaddr_t start_address;
         int i;
-        swaddr_t address;
-        char* cmd=strtok(args," ");
-        int n=atoi(cmd);
-        cmd=strtok(NULL," ");
         bool suc;
-        address=expr(cmd,&suc);
+        char*cmd=strtok(args," ");
+        sscanf(cmd,"%d",&n);
+        args=cmd+strlen(cmd)+1;
+        start_address=expr(args,&suc);
         if(!suc)    assert(1);
-        printf("0x%08x:",address);
+        printf("0x%08x:",start_address);
         for(i=1;i<=n;i++)
         {
-            printf("0x%x 0x%08x\n",address,swaddr_read(address,4));
-            address+=4;
+            printf("0x%x 0x%08x\n",start_address,swaddr_read(start_address,4));
+            start_address+=4;
         }              
         printf("\n");
         return 0;  
