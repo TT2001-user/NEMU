@@ -57,9 +57,8 @@ static int cmd_info(char *args){
            printf("esi 0x%x %d\n",cpu.esi,cpu.esi);
            printf("edi 0x%x %d\n",cpu.edi,cpu.edi);
          }
-    // else if(strcmp(arg,"w")==0){
-
-    //   }
+      else if(args[0]=='w')
+           info_wp();
       return 0;
 }
 
@@ -93,6 +92,25 @@ static int cmd_x(char *args){
         return 0;  
 }
 
+static int cmd_w(char *args){
+        WP *f;
+        bool suc;
+        f=new_wp();
+        printf("Watchpoint %d:%s\n",f->NO,args);
+        f->val=expr(args,&suc);
+        strcpy(f->expr,args);
+        if(!suc) Assert(1,"wrong\n");
+        printf("Value:%d\n",f->val);
+        return 0;
+}
+
+static int cmd_d(char *args){
+        int num;
+        sscanf(args,"%d",&num);
+        delete_wp(num);
+        return 0;
+}
+
 static struct {
 	char *name;
 	char *description;
@@ -102,9 +120,11 @@ static struct {
 	{ "c", "Continue the execution of the program", cmd_c },
 	{ "q", "Exit NEMU", cmd_q },
         { "si", "Step into implementation of N instructions after the suspension of execution.If N is not given, the defoult is 1.",cmd_si},
-        { "info", "r for print register state",cmd_info},
+        { "info", "r for print register state\nw for print watchpoint information",cmd_info},
         { "p", "Expression evaluation",cmd_p},
         { "x", "Calculate the value of the expression and regard the result as the starting memory address.",cmd_x},
+        { "w", "Stop the execution of the program if the result of the expression has changed.",cmd_w},
+        { "d", "Delete the Nth watchpoint",cmd_d},
 	/* TODO: Add more commands */
 
 };
