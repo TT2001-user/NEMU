@@ -71,5 +71,12 @@ test: $(nemu_BIN) $(testcase_BIN) entry
 	$(call git_commit, "test")
 	bash test.sh $(testcase_BIN)
 
+count:
+	@echo "all lines"
+	@find ./nemu/ -type f -name "*[.c|.h]" |xargs wc -l
+	@echo "except empty lines"
+	@find ./nemu/ -type f -name "*[.c|.h]" |xargs grep "^." |wc -l
+        
+
 submit: clean
 	cd .. && zip -r $(STU_ID).zip $(shell pwd | grep -o '[^/]*$$')
