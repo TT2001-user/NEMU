@@ -2,7 +2,12 @@
 #define __DECODE_H__
 
 #include "cpu/helper.h"
-
+make_helper(update_b);
+make_helper(update_w);
+make_helper(update_l);
+make_helper(decode_n_b);
+make_helper(decode_n_w);
+make_helper(decode_n_l);
 make_helper(decode_r_b);
 make_helper(decode_r_w);
 make_helper(decode_r_l);
@@ -12,6 +17,9 @@ make_helper(decode_rm_l);
 make_helper(decode_i_b);
 make_helper(decode_i_w);
 make_helper(decode_i_l);
+make_helper(decode_ii_b);
+make_helper(decode_ii_w);
+make_helper(decode_ii_l);
 make_helper(decode_si_b);
 make_helper(decode_si_l);
 
